@@ -32,12 +32,14 @@ const Ws = require("ws");
 	}
 
 	// 接收前端发送过来的数据
-  function handleMessage(e) {
-    const msg = JSON.stringify(JSON.parse(e))
-    console.log("message", msg);
-    server.clients.forEach(function (c) {
-      c.send(msg)
-    })
+	function handleMessage(e) {
+		const msg = JSON.stringify(JSON.parse(e));
+		console.log("message", msg);
+		server.clients.forEach(function (c) {
+			if (c.readyState === 1) {
+				c.send(msg);
+			}
+		});
 	}
 
 	init();
