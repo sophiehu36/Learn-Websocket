@@ -42,7 +42,7 @@
 
 	//心跳检测
 	var heartCheck = {
-		timeout: 6000, //1分钟发一次心跳
+		timeout: 60000, //1分钟发一次心跳
 		timeoutObj: null,
 		serverTimeoutObj: null,
 		reset: function () {
@@ -61,7 +61,7 @@
 					//如果超过一定时间还没重置，说明后端主动断开了
 					ws.close(); //如果onclose会执行reconnect，我们执行ws.close()就行了.如果直接执行reconnect 会触发onclose导致重连两次
 				}, self.timeout);
-			}, this.timeout);
+			}, this.timeout); //外部的setTimeout会先于内部的setTimeout执行
 		},
 	};
 
@@ -74,21 +74,25 @@
 	}
 
 	function handleSendBtnClick() {
-		console.log("Send message");
+		console.log("Send message", ws.readyState);
 		const msg = oMessage.value;
 		// 去掉空格的信息长度为0，即没有内容
 		if (!msg.trim().length) {
 			return;
 		}
-		ws.send(
-			JSON.stringify({
-				user: username,
-				dateTime: new Date().getTime(),
-				message: msg,
-			})
-		);
-
-		oMessage.value = "";
+		// 判断链接状态是否为1(OPEN,已经链接且可以通讯)
+		if (ws.readyState !== 1) {
+			ws.close();
+		} else {
+			ws.send(
+				JSON.stringify({
+					user: username,
+					dateTime: new Date().getTime(),
+					message: msg,
+				})
+			);
+			oMessage.value = "";
+		}
 	}
 
 	function handleOpen(e) {
